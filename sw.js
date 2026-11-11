@@ -1,6 +1,6 @@
 // Service worker: guarda toda la app para que funcione sin conexión.
 // Al cambiar cualquier archivo, sube VERSION para que se actualice en los dispositivos.
-const VERSION = 'v1';
+const VERSION = 'v2';
 const CACHE = `mi-garage-${VERSION}`;
 
 const CORE = [
@@ -10,6 +10,7 @@ const CORE = [
   'js/games/spell.js', 'js/games/garage.js',
   'assets/icons/icon.svg', 'assets/icons/icon-192.png', 'assets/icons/icon-512.png',
   'assets/icons/maskable-512.png', 'assets/icons/apple-touch-icon.png',
+  'assets/icons/favicon-16.png', 'assets/icons/favicon-32.png', 'favicon.ico',
 ];
 
 self.addEventListener('install', (event) => {

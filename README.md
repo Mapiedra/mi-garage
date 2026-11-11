@@ -3,7 +3,12 @@
 PWA de juegos con logotipos de marcas de coches y voz en español, pensada para un niño con autismo
 que empieza a leer: interfaz predecible, colores suaves, botones grandes, sin tiempo ni "perder".
 
-**Web:** https://mapiedra.github.io/mi-garage/ (en el móvil: menú del navegador → *Añadir a pantalla de inicio*).
+**Web:** https://mapiedra.github.io/mi-garage/
+
+## Instalar como app
+- **Android / Chrome / Edge:** botón **📲 Instalar como app** en la pantalla de inicio (o menú ⋮ → *Instalar aplicación*).
+- **iPhone / iPad:** abrir en Safari → botón *Compartir* → *Añadir a pantalla de inicio*.
+- Una vez instalada se abre a pantalla completa, con su icono, y funciona sin conexión.
 
 ## Juegos
 1. **¿Cuál es?** — se ve un logo y se elige su nombre entre 2–4 opciones (tocar un nombre lo pronuncia).
@@ -25,6 +30,7 @@ npm install          # solo hace falta para regenerar imágenes (sharp)
 npm start            # http://localhost:5173
 npm run logos        # vuelve a descargar y normalizar los logotipos
 node scripts/make-icons.mjs   # regenera los iconos de la app
+node scripts/make-social.mjs  # regenera la miniatura para compartir y el favicon
 ```
 
 - Marcas y su pronunciación: `js/brands.js` (campo `say`, escrito como suena en español).

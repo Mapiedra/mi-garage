@@ -1,20 +1,37 @@
 {
+  "id": "./",
   "name": "Mi Garaje de Marcas",
   "short_name": "Mi Garaje",
-  "description": "Juegos de logotipos de coches con voz en español.",
+  "description": "Juegos de logotipos de marcas de coches con voz en español: adivina la marca, escucha y toca, puzles, parejas y escribir el nombre. Pensada para niños con autismo. Funciona sin conexión.",
   "lang": "es",
-  "id": "./",
+  "dir": "ltr",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
   "orientation": "any",
   "background_color": "#f4f1ea",
   "theme_color": "#2e6da4",
   "categories": ["education", "games", "kids"],
+  "prefer_related_applications": false,
+  "launch_handler": { "client_mode": "focus-existing" },
   "icons": [
     { "src": "assets/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
     { "src": "assets/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
     { "src": "assets/icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
     { "src": "assets/icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ],
+  "screenshots": [
+    { "src": "assets/screenshots/narrow-home.png", "sizes": "1080x2160", "type": "image/png", "form_factor": "narrow", "label": "Elige entre seis juegos" },
+    { "src": "assets/screenshots/narrow-quiz.png", "sizes": "1080x2160", "type": "image/png", "form_factor": "narrow", "label": "¿Cuál es? Mira el logo y elige su nombre" },
+    { "src": "assets/screenshots/narrow-puzzle.png", "sizes": "1080x2160", "type": "image/png", "form_factor": "narrow", "label": "Puzle: monta el logo pieza a pieza" },
+    { "src": "assets/screenshots/wide-home.png", "sizes": "1280x800", "type": "image/png", "form_factor": "wide", "label": "Pantalla de inicio en tableta u ordenador" },
+    { "src": "assets/screenshots/wide-garage.png", "sizes": "1280x800", "type": "image/png", "form_factor": "wide", "label": "Mi garaje: todas las marcas y estrellas" }
+  ],
+  "shortcuts": [
+    { "name": "¿Cuál es?", "short_name": "¿Cuál es?", "url": "./#/quiz", "icons": [{ "src": "assets/icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Puzle", "short_name": "Puzle", "url": "./#/puzzle", "icons": [{ "src": "assets/icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Parejas", "short_name": "Parejas", "url": "./#/memory", "icons": [{ "src": "assets/icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Mi garaje", "short_name": "Mi garaje", "url": "./#/garage", "icons": [{ "src": "assets/icons/icon-192.png", "sizes": "192x192" }] }
   ]
 }

@@ -330,3 +330,11 @@ html.calm .pop-in { animation: none; }
 
 :focus-visible { outline: 4px solid #f0b429; outline-offset: 3px; }
 .view:focus, .view:focus-visible { outline: none; }
+
+/* ---------- Instalar como app ---------- */
+.home-install { display: flex; justify-content: center; margin-top: 22px; }
+.home-install:empty { display: none; }
+.install-btn { font-size: 19px; min-height: 56px; background: var(--primary-soft); border-color: #bcd3e9; }
+.install-card img { width: 96px; height: 96px; aspect-ratio: auto; border-radius: 22px; }
+.install-card h2 { font-size: 30px; }
+.install-steps { text-align: left; margin: 0; padding-left: 26px; display: grid; gap: 10px; font-size: 19px; font-weight: 700; }

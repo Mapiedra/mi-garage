@@ -86,7 +86,9 @@ function renderHome() {
       el('span.game-icon', { 'aria-hidden': 'true' }, g.icon),
       el('span.game-title', {}, g.title),
       el('span.game-hint', {}, g.hint)))),
+    el('div.install-slot.home-install'),
   );
+  refreshInstall();
   setRepeat(() => speak('¡Elige un juego!'));
 }
 
@@ -157,12 +159,16 @@ function renderSettings(scope) {
       el('button.btn', { type: 'button', onclick: () => { BRANDS.forEach((b) => chosen.add(b.slug)); saveBrands(); paintBrands(); } }, 'Todas'),
     ),
     brandGrid,
+    el('h2', {}, 'App'),
+    el('p.muted', {}, isStandalone() ? '✅ Funcionando como app instalada.' : 'Instálala para abrirla desde la pantalla de inicio, a pantalla completa y sin conexión.'),
+    el('div.install-slot'),
     el('h2', {}, 'Progreso'),
     el('button.btn', { type: 'button', onclick: () => {
       if (confirm('¿Borrar todas las estrellas ganadas?')) { resetStars(); alert('Estrellas borradas.'); }
     } }, '🗑️ Borrar estrellas'),
     el('a.btn.btn-primary.done', { href: '#/' }, '✔ Listo'),
   ));
+  refreshInstall();
   return scope;
 }
 
@@ -185,6 +191,8 @@ function renderSettings(scope) {
 function startOverlay() {
   const overlay = document.getElementById('start');
   const go = document.getElementById('go');
+  // ?captura: sin pantalla de inicio (solo para hacer capturas de la tienda/instalación).
+  if (new URLSearchParams(location.search).has('captura')) { overlay.remove(); return; }
   go.addEventListener('click', () => {
     unlockAudio();
     unlockSpeech();
@@ -195,6 +203,59 @@ function startOverlay() {
     speak(id ? GAMES.find((g) => g.id === id)?.say || '' : '¡Hola! Bienvenido a tu garaje. Elige un juego.');
   }, { once: true });
   go.focus();
+}
+
+// ---------- Instalar como app ----------
+let installPrompt = null;
+const isStandalone = () => matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault(); // mostramos nuestro propio botón
+  installPrompt = e;
+  refreshInstall();
+});
+window.addEventListener('appinstalled', () => {
+  installPrompt = null;
+  refreshInstall();
+  speak('¡Ya tienes Mi Garaje en tu pantalla!');
+});
+
+function installHelp() {
+  const steps = isIOS
+    ? [el('li', {}, 'Abre esta página en ', el('b', {}, 'Safari'), '.'),
+      el('li', {}, 'Toca el botón ', el('b', {}, 'Compartir'), ' (el cuadrado con la flecha ⬆️).'),
+      el('li', {}, 'Elige ', el('b', {}, '«Añadir a pantalla de inicio»'), ' y luego ', el('b', {}, 'Añadir'), '.')]
+    : [el('li', {}, 'Abre el menú del navegador (', el('b', {}, '⋮'), ' o ', el('b', {}, '…'), ').'),
+      el('li', {}, 'Elige ', el('b', {}, '«Instalar aplicación»'), ' o ', el('b', {}, '«Añadir a pantalla de inicio»'), '.')];
+  const modal = el('div.modal', { onclick: (e) => { if (e.target === modal) modal.remove(); } },
+    el('div.modal-card.install-card.pop-in', {},
+      el('img', { src: 'assets/icons/icon-192.png', alt: '', width: 96, height: 96 }),
+      el('h2', {}, 'Instalar Mi Garaje'),
+      el('ol.install-steps', {}, steps),
+      el('button.btn.btn-primary', { type: 'button', onclick: () => modal.remove() }, '¡Entendido!')));
+  document.body.append(modal);
+}
+
+function installButton() {
+  if (isStandalone()) return null;
+  return el('button.btn.install-btn', {
+    type: 'button',
+    onclick: async () => {
+      if (installPrompt) {
+        installPrompt.prompt();
+        await installPrompt.userChoice.catch(() => null);
+        installPrompt = null;
+        refreshInstall();
+      } else {
+        installHelp();
+      }
+    },
+  }, '📲 Instalar como app');
+}
+
+function refreshInstall() {
+  document.querySelectorAll('.install-slot').forEach((slot) => slot.replaceChildren(...[installButton()].filter(Boolean)));
 }
 
 applyCalm();
