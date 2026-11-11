@@ -1,0 +1,14 @@
+{
+  "name": "mi-garage",
+  "private": true,
+  "type": "module",
+  "description": "Mi Garaje de Marcas: juegos de logotipos de coches con voz en español",
+  "scripts": {
+    "logos": "node scripts/fetch-logos.mjs && node scripts/prepare-images.mjs",
+    "images": "node scripts/prepare-images.mjs",
+    "start": "npx --yes http-server -p 5173 -c-1 ."
+  },
+  "devDependencies": {
+    "sharp": "^0.33.5"
+  }
+}

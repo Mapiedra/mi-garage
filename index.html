@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+  <title>Mi Garaje de Marcas</title>
+  <meta name="description" content="Juegos de logotipos de coches con voz en español, pensados para niños con autismo.">
+  <meta name="theme-color" content="#2E6DA4">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="assets/icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Mi Garaje">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;800;900&display=swap">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <a id="home" class="icon-btn" href="#/" aria-label="Volver a casa" hidden>🏠</a>
+    <h1 id="title">Mi Garaje de Marcas</h1>
+    <button id="repeat" class="icon-btn" type="button" aria-label="Repetir" hidden>🔊</button>
+    <button id="gear" class="icon-btn gear" type="button" aria-label="Ajustes (mantener pulsado)" title="Mantén pulsado para abrir los ajustes">⚙️</button>
+  </header>
+
+  <main id="view" class="view" tabindex="-1"></main>
+
+  <div id="start" class="start-overlay">
+    <div class="start-card">
+      <div class="start-car" aria-hidden="true">🚗</div>
+      <h2>Mi Garaje de Marcas</h2>
+      <button id="go" class="btn btn-primary btn-huge" type="button">¡Vamos!</button>
+    </div>
+  </div>
+
+  <noscript>Esta aplicación necesita JavaScript.</noscript>
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
