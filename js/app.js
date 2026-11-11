@@ -60,7 +60,7 @@ function route() {
   } else if (id === 'ajustes') {
     titleEl.textContent = 'Ajustes';
     document.title = 'Ajustes · Mi Garaje';
-    view.className = 'view settings';
+    view.className = 'view settings scroll-y';
     renderSettings(scope);
     current = { scope };
   } else {
@@ -76,17 +76,19 @@ function route() {
 function renderHome() {
   const stars = totalStars();
   view.replaceChildren(
-    el('p.home-stars', {}, stars ? `⭐ ${stars} ${stars === 1 ? 'estrella' : 'estrellas'}` : '¡Elige un juego!'),
-    el('div.game-grid', {}, GAMES.map((g) =>
-      el('a.game-card', {
-        href: `#/${g.id}`,
-        dataset: { color: g.color },
-        onclick: () => { sfx.pop(); speak(g.say); },
-      },
-      el('span.game-icon', { 'aria-hidden': 'true' }, g.icon),
-      el('span.game-title', {}, g.title),
-      el('span.game-hint', {}, g.hint)))),
-    el('div.install-slot.home-install'),
+    el('div.home-head', {},
+      el('p.home-stars', {}, stars ? `⭐ ${stars} ${stars === 1 ? 'estrella' : 'estrellas'}` : '¡Elige un juego!'),
+      el('div.install-slot.home-install')),
+    el('div.home-area', {},
+      el('div.game-grid', {}, GAMES.map((g) =>
+        el('a.game-card', {
+          href: `#/${g.id}`,
+          dataset: { color: g.color },
+          onclick: () => { sfx.pop(); speak(g.say); },
+        },
+        el('span.game-icon', { 'aria-hidden': 'true' }, g.icon),
+        el('span.game-title', {}, g.title),
+        el('span.game-hint', {}, g.hint))))),
   );
   refreshInstall();
   setRepeat(() => speak('¡Elige un juego!'));

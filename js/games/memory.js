@@ -2,9 +2,10 @@
 import { settings, addStar } from '../storage.js';
 import { speak, sayBrand } from '../speech.js';
 import { sfx } from '../sounds.js';
-import { el, logoImg, shuffle, roundQueue, progressBar, nudge, roundEnd } from '../ui.js';
+import { el, logoImg, shuffle, roundQueue, progressBar, nudge, roundEnd, fitGrid } from '../ui.js';
 
 export function mount(view, { scope, setRepeat }) {
+  let layoutOff = null;
   function start() {
     const pairs = settings.get('pairs');
     const brands = roundQueue(pairs);
@@ -14,9 +15,7 @@ export function mount(view, { scope, setRepeat }) {
     let open = [];
     let busy = false;
 
-    const total = deck.length;
-    const cols = total <= 6 ? 3 : 4;
-    const grid = el('div.memory-grid', { style: { gridTemplateColumns: `repeat(${cols}, 1fr)`, maxWidth: total > 12 ? '640px' : '600px' } });
+    const grid = el('div.memory-grid');
 
     const cards = deck.map((b) => {
       const c = el('button.card-m', { type: 'button', 'aria-label': 'Carta' },
@@ -63,7 +62,10 @@ export function mount(view, { scope, setRepeat }) {
       }
     }
 
-    view.replaceChildren(progress.node, el('p.prompt', {}, 'Busca las parejas'), grid);
+    const area = el('div.fit-area', {}, grid);
+    view.replaceChildren(progress.node, el('div.play', {}, el('div.layout.stack', {}, el('p.prompt', {}, 'Busca las parejas'), area)));
+    layoutOff?.();
+    layoutOff = fitGrid(scope, grid, deck.length, { gap: (w, h) => (Math.min(w, h) < 420 ? 8 : 14), max: 300 });
     const say = () => speak('Busca los logos iguales');
     setRepeat(say);
     say();

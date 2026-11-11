@@ -1,7 +1,7 @@
 // Juego 5 · Escribe la marca.  Se tocan las letras en orden para formar el nombre.
 import { speak, sayBrand, sayLetter } from '../speech.js';
 import { sfx } from '../sounds.js';
-import { el, logoImg, shuffle, activeBrands, roundQueue, progressBar, celebrate, nudge, roundEnd } from '../ui.js';
+import { el, logoImg, shuffle, activeBrands, roundQueue, progressBar, celebrate, nudge, roundEnd, fitGrid } from '../ui.js';
 
 const ROUND = 5;
 const MAX_LETTERS = 8;
@@ -10,6 +10,7 @@ const MAX_LETTERS = 8;
 const plain = (s) => s.toUpperCase().replace(/Ñ/g, '\u0001').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/\u0001/g, 'Ñ');
 
 export function mount(view, { scope, setRepeat }) {
+  let layoutOff = null;
   function start() {
     let pool = activeBrands().filter((b) => /^[A-Za-zÀ-ž ]+$/.test(b.name) && plain(b.name).replace(/ /g, '').length <= MAX_LETTERS);
     if (pool.length < 3) pool = activeBrands().filter((b) => plain(b.name).replace(/[^A-ZÑ]/g, '').length <= MAX_LETTERS);
@@ -75,12 +76,23 @@ export function mount(view, { scope, setRepeat }) {
         }
       }
 
+      const wordEl = el('div.word', { 'aria-label': brand.name }, cells);
+      const lettersEl = el('div.letters', {}, tiles);
       view.replaceChildren(
         progress.node,
-        el('div.stage.spell-logo.pop-in', {}, logoImg(brand)),
-        el('div.word', { 'aria-label': brand.name }, cells),
-        el('div.letters', {}, tiles),
+        el('div.play', {}, el('div.layout.spell-layout', {},
+          el('div.spell-logo.stage-box', {}, el('div.stage.pop-in', {}, logoImg(brand))),
+          el('div.spell-right', {}, wordEl, el('div.fit-area', {}, lettersEl)))),
       );
+      layoutOff?.();
+      layoutOff = fitGrid(scope, lettersEl, tiles.length, {
+        gap: 12, max: 130,
+        onFit: ({ size, w }) => {
+          // Las casillas de la palabra, un poco más pequeñas que las letras y siempre en una fila.
+          const cw = Math.floor(Math.min(size * 0.9, 76, (w - 8 * (word.length - 1)) / word.length));
+          wordEl.style.setProperty('--cw', `${cw}px`);
+        },
+      });
       progress.set(i);
       markNext();
       const say = () => sayBrand(brand, 'Escribe');

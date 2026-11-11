@@ -25,8 +25,8 @@
     { "src": "assets/screenshots/narrow-home.png", "sizes": "1080x2160", "type": "image/png", "form_factor": "narrow", "label": "Elige entre seis juegos" },
     { "src": "assets/screenshots/narrow-quiz.png", "sizes": "1080x2160", "type": "image/png", "form_factor": "narrow", "label": "¿Cuál es? Mira el logo y elige su nombre" },
     { "src": "assets/screenshots/narrow-puzzle.png", "sizes": "1080x2160", "type": "image/png", "form_factor": "narrow", "label": "Puzle: monta el logo pieza a pieza" },
-    { "src": "assets/screenshots/wide-home.png", "sizes": "1280x800", "type": "image/png", "form_factor": "wide", "label": "Pantalla de inicio en tableta u ordenador" },
-    { "src": "assets/screenshots/wide-garage.png", "sizes": "1280x800", "type": "image/png", "form_factor": "wide", "label": "Mi garaje: todas las marcas y estrellas" }
+    { "src": "assets/screenshots/wide-home.png", "sizes": "1280x800", "type": "image/png", "form_factor": "wide", "label": "Pantalla de inicio en la tablet en horizontal" },
+    { "src": "assets/screenshots/wide-garage.png", "sizes": "1280x800", "type": "image/png", "form_factor": "wide", "label": "¿Cuál es? en la tablet en horizontal" }
   ],
   "shortcuts": [
     { "name": "¿Cuál es?", "short_name": "¿Cuál es?", "url": "./#/quiz", "icons": [{ "src": "assets/icons/icon-192.png", "sizes": "192x192" }] },

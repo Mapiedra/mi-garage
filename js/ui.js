@@ -69,6 +69,7 @@ export function roundQueue(n, pool = activeBrands()) {
  */
 export function createScope() {
   const timers = new Set();
+  const disposers = new Set();
   let alive = true;
   return {
     get alive() { return alive; },
@@ -78,12 +79,76 @@ export function createScope() {
         timers.add(t);
       });
     },
+    /** Registra algo que hay que limpiar al salir de la pantalla. Devuelve una función para limpiarlo antes. */
+    onDispose(fn) {
+      disposers.add(fn);
+      return () => { if (disposers.delete(fn)) fn(); };
+    },
     dispose() {
       alive = false;
       timers.forEach(clearTimeout);
       timers.clear();
+      disposers.forEach((fn) => fn());
+      disposers.clear();
     },
   };
+}
+
+/** Observa el tamaño de un elemento y llama a fn(ancho, alto) al cambiar (rotar la tablet, etc.). */
+export function onResize(node, fn) {
+  let last = '';
+  const run = () => {
+    const w = node.clientWidth, h = node.clientHeight;
+    const key = `${w}x${h}`;
+    if (!w || !h || key === last) return;
+    last = key;
+    fn(w, h);
+  };
+  // El observador avisa ya con el diseño calculado; además medimos al momento
+  // para que la primera pintura salga ya ajustada.
+  const ro = new ResizeObserver(run);
+  ro.observe(node);
+  run();
+  return () => ro.disconnect();
+}
+
+/**
+ * Calcula la mejor rejilla para meter `count` casillas cuadradas (o de proporción
+ * alto/ancho = ratio) en un hueco de w×h sin desbordar. Devuelve { cols, rows, size }.
+ */
+export function bestGrid(count, w, h, { gap = 12, ratio = 1, max = Infinity } = {}) {
+  let best = { cols: 1, rows: count, size: 0 };
+  // De más columnas a menos: si dos rejillas dan el mismo tamaño, gana la más ancha.
+  for (let cols = count; cols >= 1; cols--) {
+    const rows = Math.ceil(count / cols);
+    const size = Math.min((w - gap * (cols - 1)) / cols, (h - gap * (rows - 1)) / rows / ratio, max);
+    if (size > best.size + 0.5) best = { cols, rows, size };
+  }
+  best.size = Math.max(0, Math.floor(best.size));
+  return best;
+}
+
+/**
+ * Hace que una rejilla de `count` elementos ocupe todo su contenedor sin scroll.
+ * Si las casillas quedarían más pequeñas que `min`, se permite desplazamiento vertical.
+ */
+export function fitGrid(scope, grid, count, { container = grid.parentElement, gap = 12, ratio = 1, min = 0, max = Infinity, onFit } = {}) {
+  const off = onResize(container, (w, h) => {
+    const g = typeof gap === 'function' ? gap(w, h) : gap;
+    let { cols, size } = bestGrid(count, w, h, { gap: g, ratio, max });
+    const scroll = size < min;
+    if (scroll) {
+      cols = Math.max(1, Math.floor((w + g) / (min + g)));
+      size = Math.min(max, Math.floor((w - g * (cols - 1)) / cols));
+    }
+    container.classList.toggle('scroll-y', scroll);
+    grid.style.gap = `${g}px`;
+    grid.style.gridTemplateColumns = `repeat(${cols}, ${size}px)`;
+    grid.style.gridAutoRows = `${Math.floor(size * ratio)}px`;
+    grid.style.setProperty('--cell', `${size}px`);
+    onFit?.({ cols, size, scroll, w, h });
+  });
+  return scope.onDispose(off);
 }
 
 /** Barra de progreso: un coche avanza hacia la bandera de meta. */

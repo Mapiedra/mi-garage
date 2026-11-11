@@ -3,9 +3,9 @@ import { BRANDS } from '../brands.js';
 import { settings, totalStars } from '../storage.js';
 import { speak, sayBrand } from '../speech.js';
 import { sfx } from '../sounds.js';
-import { el, logoImg } from '../ui.js';
+import { el, logoImg, fitGrid } from '../ui.js';
 
-export function mount(view, { setRepeat }) {
+export function mount(view, { scope, setRepeat }) {
   const stars = settings.get('stars');
   const total = totalStars();
   // Primero las que más estrellas tienen; luego el resto en orden alfabético.
@@ -29,16 +29,19 @@ export function mount(view, { setRepeat }) {
   }
   function close() { modal?.remove(); modal = null; }
 
-  view.replaceChildren(
-    el('p.garage-head', {}, total ? `Tienes ⭐ ${total} ${total === 1 ? 'estrella' : 'estrellas'}` : 'Toca un logo para escucharlo'),
-    el('div.garage-grid', {}, list.map((b) => {
+  const grid = el('div.garage-grid', {}, list.map((b) => {
       const n = stars[b.slug] || 0;
       return el(`button.garage-item${n ? '' : '.new'}`, { type: 'button', 'aria-label': b.name, onclick: () => open(b) },
         logoImg(b),
         el('span.name', {}, b.name),
         n ? el('span.badge', {}, `⭐${n}`) : null);
-    })),
+    }));
+  view.replaceChildren(
+    el('p.garage-head', {}, total ? `Tienes ⭐ ${total} ${total === 1 ? 'estrella' : 'estrellas'}` : 'Toca un logo para escucharlo'),
+    el('div.fit-area.garage-area', {}, grid),
   );
+  // Todas las marcas a la vista; si no caben con un tamaño cómodo, se desplaza en vertical.
+  fitGrid(scope, grid, list.length, { gap: (w) => (w < 500 ? 8 : 12), min: 92, max: 200 });
   setRepeat(() => speak('Este es tu garaje. Toca un logo para escucharlo'));
   speak('Este es tu garaje');
   return close;

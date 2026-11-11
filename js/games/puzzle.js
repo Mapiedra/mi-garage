@@ -3,7 +3,7 @@
 import { settings } from '../storage.js';
 import { speak } from '../speech.js';
 import { sfx } from '../sounds.js';
-import { el, shuffle, roundQueue, progressBar, celebrate, nudge, roundEnd } from '../ui.js';
+import { el, shuffle, roundQueue, progressBar, celebrate, nudge, roundEnd, onResize, bestGrid } from '../ui.js';
 import { logoUrl } from '../brands.js';
 
 const ROUND = 3;
@@ -39,7 +39,6 @@ export function mount(view, { scope, setRepeat }) {
       }
       const tray = el('div.tray');
       const wrap = el('div.puzzle-wrap', {}, board, tray);
-      const nextRow = el('div.next-row');
 
       const pieces = shuffle([...Array(n * n).keys()]).map((k) => {
         const row = Math.floor(k / n), col = k % n;
@@ -57,23 +56,42 @@ export function mount(view, { scope, setRepeat }) {
         return p;
       });
 
-      view.replaceChildren(progress.node, el('p.prompt', {}, '¿Qué marca será?'), wrap, nextRow);
+      const area = el('div.fit-area', {}, wrap);
+      view.replaceChildren(progress.node, el('div.play', {}, el('div.layout.stack', {}, el('p.prompt', {}, '¿Qué marca será?'), area)));
       progress.set(i);
 
-      // Tamaño de las piezas según el tablero real.
+      // Tablero y bandeja se reparten la pantalla: lado a lado en horizontal,
+      // uno encima del otro en vertical. Todo cabe sin desplazarse.
       let slotSize = 100;
-      const measure = () => {
-        slotSize = board.clientWidth / n;
-        // Las piezas de la bandeja se reparten en pocas filas para que tablero y
-        // bandeja quepan a la vez en la pantalla (sin tener que desplazarse).
-        const rows = n === 2 ? 1 : n === 3 ? 2 : 3;
-        const perRow = Math.ceil((n * n) / rows);
-        const free = tray.clientWidth - 24 - (perRow - 1) * 10;
-        wrap.style.setProperty('--piece', `${Math.floor(Math.max(44, Math.min(slotSize, 130, free / perRow)))}px`);
+      const GAP = 18, PAD = 12, PGAP = 10;
+      const layout = (w, h) => {
+        const landscape = w > h * 1.1;
+        const count = n * n;
+        // Probamos varios tamaños de tablero y nos quedamos con el que deja las piezas más grandes
+        // sin que el tablero sea demasiado pequeño.
+        let best = null;
+        for (let f = 0.45; f <= 0.8; f += 0.05) {
+          const boardSize = Math.floor(landscape ? Math.min(h, w * f) : Math.min(w, h * f));
+          const tw = landscape ? w - boardSize - GAP : w;
+          const th = landscape ? h : h - boardSize - GAP;
+          if (tw < 60 || th < 60) continue;
+          // -6: borde de la bandeja (2+2) y un margen de seguridad.
+          const g = bestGrid(count, tw - PAD * 2 - 6, th - PAD * 2 - 6, { gap: PGAP, max: boardSize / n });
+          const score = Math.min(g.size * 1.6, boardSize / n) + boardSize / n * 0.6;
+          if (!best || score > best.score) best = { score, boardSize, tw, th, g };
+        }
+        if (!best) return;
+        slotSize = best.boardSize / n;
+        wrap.classList.toggle('landscape', landscape);
+        board.style.width = board.style.height = `${best.boardSize}px`;
+        // Bandeja justa para sus piezas (+4 px del borde).
+        if (!tray.classList.contains('finished')) {
+          tray.style.width = `${best.g.cols * best.g.size + (best.g.cols - 1) * PGAP + PAD * 2 + 4}px`;
+          tray.style.height = `${best.g.rows * best.g.size + (best.g.rows - 1) * PGAP + PAD * 2 + 4}px`;
+        }
+        wrap.style.setProperty('--piece', `${best.g.size}px`);
       };
-      measure();
-      window.addEventListener('resize', measure);
-      cleanupResize = () => window.removeEventListener('resize', measure);
+      cleanupResize = scope.onDispose(onResize(area, layout));
 
       const say = () => speak('¿Qué marca será? Monta el puzle');
       setRepeat(say);
@@ -107,9 +125,11 @@ export function mount(view, { scope, setRepeat }) {
         await scope.wait(400);
         await celebrate(brand);
         if (!scope.alive) return;
-        const next = el('button.btn.btn-primary.pop-in', { type: 'button', onclick: () => { i++; play(); } },
+        const next = el('button.btn.btn-primary.btn-next.pop-in', { type: 'button', onclick: () => { i++; play(); } },
           i + 1 < ROUND ? 'Siguiente ➜' : 'Terminar 🏁');
-        nextRow.replaceChildren(next);
+        tray.classList.add('finished');
+        tray.style.width = tray.style.height = '';
+        tray.replaceChildren(next);
         next.focus();
       }
 

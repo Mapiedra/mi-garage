@@ -1,11 +1,11 @@
 // Juego 2 · Escucha y toca.  La voz dice una marca y hay que tocar su logo.
 import { settings } from '../storage.js';
 import { sayBrand } from '../speech.js';
-import { el, logoImg, sample, shuffle, activeBrands, roundQueue, progressBar, celebrate, tryAgain, nudge, roundEnd } from '../ui.js';
+import { el, logoImg, sample, shuffle, activeBrands, roundQueue, progressBar, celebrate, tryAgain, nudge, roundEnd, fitGrid } from '../ui.js';
 
 const ROUND = 10;
-
 export function mount(view, { scope, setRepeat }) {
+  let layoutOff = null;
   function start() {
     const queue = roundQueue(ROUND);
     const won = [];
@@ -48,11 +48,16 @@ export function mount(view, { scope, setRepeat }) {
         }
       }
 
+      const grid = el('div.logo-options.pop-in', {}, tiles);
+      const area = el('div.fit-area', {}, grid);
       view.replaceChildren(
         progress.node,
-        el('div.listen-big', {}, el('button.btn.btn-primary', { type: 'button', onclick: say }, '🔊 Escuchar')),
-        el(`div.logo-options.n${n === 3 ? 3 : 2}.pop-in`, {}, tiles),
+        el('div.play', {}, el('div.layout.stack', {},
+          el('div.listen-big', {}, el('button.btn.btn-primary', { type: 'button', onclick: say }, '🔊 Escuchar')),
+          area)),
       );
+      layoutOff?.();
+      layoutOff = fitGrid(scope, grid, tiles.length, { gap: (w) => (w < 500 ? 12 : 22), max: 320 });
       progress.set(i);
       setRepeat(say);
       say();

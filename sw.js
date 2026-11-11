@@ -1,6 +1,6 @@
 // Service worker: guarda toda la app para que funcione sin conexión.
 // Al cambiar cualquier archivo, sube VERSION para que se actualice en los dispositivos.
-const VERSION = 'v2';
+const VERSION = 'v3';
 const CACHE = `mi-garage-${VERSION}`;
 
 const CORE = [

@@ -31,8 +31,12 @@ html.calm { --dur: 0s; }
 @media (prefers-reduced-motion: reduce) { :root { --dur: 0s; } }
 
 * { box-sizing: border-box; }
-html, body { margin: 0; height: 100%; }
+html, body { margin: 0; height: 100%; overflow: hidden; }
 body {
+  /* La app ocupa exactamente la pantalla: nunca hay desplazamiento horizontal
+     y en los juegos tampoco vertical. */
+  display: flex; flex-direction: column;
+  height: 100vh; height: 100dvh;
   background: var(--bg);
   color: var(--ink);
   font-family: var(--font);
@@ -44,6 +48,7 @@ body {
   user-select: none;
   overscroll-behavior: none;
   touch-action: manipulation;
+  -webkit-text-size-adjust: 100%;
 }
 img { -webkit-user-drag: none; }
 button, a.btn, select { font: inherit; color: inherit; }
@@ -52,13 +57,13 @@ h1, h2 { margin: 0; font-weight: 900; }
 
 /* ---------- Barra superior (siempre igual) ---------- */
 .topbar {
-  position: sticky; top: 0; z-index: 10;
+  flex: none; z-index: 10;
   display: flex; align-items: center; gap: 10px;
-  padding: calc(8px + env(safe-area-inset-top)) 12px 8px;
+  padding: calc(8px + env(safe-area-inset-top)) calc(12px + env(safe-area-inset-right)) 8px calc(12px + env(safe-area-inset-left));
   background: var(--bg);
   border-bottom: 2px solid var(--line);
 }
-.topbar h1 { flex: 1; font-size: clamp(20px, 4.6vw, 30px); text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.topbar h1 { flex: 1; min-width: 0; font-size: clamp(20px, 3.4vw, 30px); text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .icon-btn {
   width: 60px; height: 60px; flex: none;
   display: grid; place-items: center;
@@ -74,13 +79,30 @@ h1, h2 { margin: 0; font-weight: 900; }
   content: ''; position: absolute; left: 0; bottom: 0; height: 5px; width: 0; background: var(--primary);
 }
 .gear.holding::after { width: 100%; transition: width 2s linear; }
+/* Pantallas bajas (móvil en horizontal): barra más compacta */
+@media (max-height: 560px) {
+  .topbar { padding-top: calc(4px + env(safe-area-inset-top)); padding-bottom: 4px; }
+  .icon-btn { width: 48px; height: 48px; font-size: 24px; border-radius: 14px; }
+  .gear { width: 40px; height: 40px; font-size: 19px; }
+}
 
 /* ---------- Vista ---------- */
 .view {
-  max-width: 1040px; margin: 0 auto;
-  padding: 16px 16px calc(28px + env(safe-area-inset-bottom));
+  flex: 1; min-height: 0; width: 100%; max-width: 1500px; margin: 0 auto;
+  display: flex; flex-direction: column;
+  padding: 12px calc(16px + env(safe-area-inset-right)) calc(12px + env(safe-area-inset-bottom)) calc(16px + env(safe-area-inset-left));
+  overflow: hidden;
   outline: none;
 }
+@media (max-height: 560px) { .view { padding-top: 6px; padding-bottom: calc(6px + env(safe-area-inset-bottom)); } }
+.scroll-y { overflow-y: auto !important; overflow-x: hidden; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
+
+/* Zona de juego: ocupa todo lo que queda y mide su propio tamaño */
+.play { flex: 1; min-height: 0; min-width: 0; width: 100%; position: relative; container-type: size; }
+.layout { position: absolute; inset: 0; }
+.layout.stack { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.fit-area { flex: 1; min-height: 0; min-width: 0; width: 100%; display: grid; place-items: center; overflow: hidden; }
+.fit-area.scroll-y { place-items: start center; }
 
 /* ---------- Botones ---------- */
 .btn {
@@ -110,15 +132,17 @@ html.calm .start-car { animation: none; }
 @media (prefers-reduced-motion: reduce) { .start-car { animation: none; } }
 
 /* ---------- Inicio ---------- */
-.home-stars { text-align: center; font-size: 22px; margin: 4px 0 16px; color: var(--muted); }
+.home-head { flex: none; display: flex; align-items: center; justify-content: center; gap: 14px; flex-wrap: wrap; margin-bottom: 12px; }
+.home-stars { margin: 0; text-align: center; font-size: 22px; color: var(--muted); }
+.home-area { flex: 1; min-height: 0; container-type: size; }
 .game-grid {
-  display: grid; gap: 16px;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+  height: 100%; display: grid; gap: clamp(10px, 2cqmin, 20px);
+  grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: repeat(3, minmax(0, 1fr));
 }
 .game-card {
-  display: grid; grid-template-columns: auto 1fr; grid-template-rows: auto auto;
-  column-gap: 16px; align-items: center;
-  min-height: 120px; padding: 18px 20px;
+  min-width: 0; min-height: 0; overflow: hidden;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 1.2cqh;
+  padding: 10px 14px;
   border-radius: var(--radius); border: 2px solid rgba(0,0,0,.05);
   background: var(--card); box-shadow: var(--shadow);
   text-decoration: none; color: var(--ink);
@@ -130,56 +154,99 @@ html.calm .start-car { animation: none; }
 .game-card[data-color="teal"] { background: var(--teal); }
 .game-card[data-color="red"] { background: var(--red); }
 .game-icon {
-  grid-row: span 2; font-size: 52px; width: 84px; height: 84px;
-  display: grid; place-items: center; background: rgba(255,255,255,.75); border-radius: 22px;
+  flex: none; display: grid; place-items: center; background: rgba(255,255,255,.75);
+  width: clamp(48px, 13cqh, 120px); height: clamp(48px, 13cqh, 120px); border-radius: 24%;
+  font-size: clamp(30px, 8.5cqh, 76px); line-height: 1;
 }
-.game-title { font-size: 28px; font-weight: 900; align-self: end; }
-.game-hint { font-size: 17px; color: var(--muted); font-weight: 700; align-self: start; }
+.game-title { font-size: clamp(19px, min(5cqh, 4.4cqw), 36px); font-weight: 900; line-height: 1.1; }
+.game-hint { font-size: clamp(14px, min(2.8cqh, 2.4cqw), 20px); color: var(--muted); font-weight: 700; line-height: 1.2; }
+/* Apaisado (tablet en horizontal): 3 columnas × 2 filas */
+@container (aspect-ratio > 1.25) {
+  .game-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: repeat(2, minmax(0, 1fr)); }
+  .game-icon { width: clamp(48px, 20cqh, 130px); height: clamp(48px, 20cqh, 130px); font-size: clamp(30px, 13cqh, 84px); }
+  .game-title { font-size: clamp(19px, min(7cqh, 3.2cqw), 38px); }
+  .game-hint { font-size: clamp(13px, min(3.6cqh, 1.8cqw), 21px); }
+}
+/* Móvil en vertical: una columna, tarjetas horizontales */
+@container (max-width: 520px) {
+  .game-grid { grid-template-columns: minmax(0, 1fr); grid-template-rows: repeat(6, minmax(0, 1fr)); }
+  .game-card { display: grid; grid-template-columns: auto 1fr; grid-template-rows: auto auto; align-content: center; justify-items: start; text-align: left; column-gap: 14px; row-gap: 0; padding: 8px 14px; }
+  .game-icon { grid-row: span 2; width: clamp(44px, 11cqh, 76px); height: clamp(44px, 11cqh, 76px); font-size: clamp(28px, 7cqh, 46px); }
+  .game-title { font-size: clamp(19px, 4cqh, 28px); align-self: end; }
+  .game-hint { font-size: clamp(13px, 2.4cqh, 17px); align-self: start; }
+}
+/* Pantalla muy baja (móvil en horizontal): sin subtítulos */
+@container (max-height: 300px) { .game-hint { display: none; } }
 
 /* ---------- Progreso ---------- */
-.progress { display: flex; align-items: center; gap: 10px; margin: 0 auto 14px; max-width: 720px; }
-.progress-track { position: relative; flex: 1; height: 14px; border-radius: 99px; background: var(--line); }
+.progress { flex: none; display: flex; align-items: center; gap: 10px; width: 100%; max-width: 760px; margin: 0 auto 10px; }
+.progress-track { position: relative; flex: 1; height: 12px; border-radius: 99px; background: var(--line); }
 .progress-fill { height: 100%; border-radius: 99px; background: var(--ok); width: 0; transition: width var(--dur) var(--ease); }
 .progress-car {
   position: absolute; top: 50%; font-size: 2.2rem; line-height: 1; transform: translateY(-58%) scaleX(-1);
   transition: left var(--dur) var(--ease);
 }
-.progress-flag { font-size: 28px; }
+.progress-flag { font-size: 26px; }
+@media (max-height: 560px) { .progress { margin-bottom: 4px; } .progress-car { font-size: 1.6rem; } .progress-flag { font-size: 20px; } }
 
 /* ---------- Pregunta / opciones ---------- */
-.prompt { text-align: center; font-size: clamp(24px, 5vw, 34px); margin: 4px 0 12px; }
+.prompt { flex: none; text-align: center; font-size: clamp(20px, min(5cqh, 6cqw), 36px); margin: 0; line-height: 1.15; }
 .stage {
-  display: grid; place-items: center;
-  margin: 0 auto 18px; width: min(70vw, 42vh, 340px); aspect-ratio: 1;
-  background: var(--card); border-radius: 32px; box-shadow: var(--shadow); border: 2px solid var(--line);
+  display: grid; place-items: center; min-width: 0; min-height: 0;
+  background: var(--card); border-radius: 8%; box-shadow: var(--shadow); border: 2px solid var(--line);
 }
 .stage .logo { width: 86%; height: 86%; object-fit: contain; }
+/* Caja que se mide a sí misma: el logo es siempre el cuadrado más grande que cabe */
+.stage-box { container-type: size; width: 100%; height: 100%; min-width: 0; min-height: 0; display: grid; place-items: center; }
+.stage-box .stage { width: min(100cqw, 100cqh); height: min(100cqw, 100cqh); }
 
-.options { display: grid; gap: 14px; max-width: 720px; margin: 0 auto; }
-.options.cols-2 { grid-template-columns: 1fr 1fr; }
+/* ¿Cuál es?  Vertical: logo arriba, nombres abajo.  Apaisado: logo a la izquierda, nombres a la derecha. */
+.quiz-layout {
+  display: grid; gap: clamp(8px, 2cqh, 18px); justify-items: center;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  grid-template-areas: "prompt" "stage" "options";
+}
+.quiz-layout .prompt { grid-area: prompt; }
+.quiz-layout .stage-box { grid-area: stage; }
+.quiz-layout .options { grid-area: options; }
+.options { display: grid; gap: clamp(8px, 1.8cqh, 14px); width: min(100%, 720px); }
 .option {
-  position: relative;
+  position: relative; min-width: 0;
   display: flex; align-items: center; justify-content: center; gap: 10px;
-  min-height: var(--tap); padding: 10px 70px;
-  font-size: clamp(26px, 6vw, 38px); font-weight: 900; letter-spacing: .02em;
+  height: clamp(54px, 10cqh, 96px); padding: 0 clamp(56px, 12cqh, 92px);
+  font-size: clamp(22px, min(5cqh, 7cqw), 42px); font-weight: 900; letter-spacing: .02em; white-space: nowrap;
   background: var(--card); border: 3px solid var(--line); border-radius: var(--radius);
   box-shadow: var(--shadow); cursor: pointer;
   transition: background var(--dur), border-color var(--dur), opacity var(--dur);
 }
+.quiz-layout[data-n="4"] .option { height: clamp(50px, 8.5cqh, 92px); }
 .option .listen {
   position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
-  width: 54px; height: 54px; border-radius: 16px; border: 0;
-  background: var(--primary-soft); font-size: 24px; cursor: pointer;
+  width: clamp(42px, 7cqh, 64px); height: clamp(42px, 7cqh, 64px); border-radius: 16px; border: 0;
+  display: grid; place-items: center;
+  background: var(--primary-soft); font-size: clamp(20px, 3.4cqh, 30px); cursor: pointer;
 }
 .option.correct { background: var(--ok-soft); border-color: var(--ok); }
 .option.dim { opacity: .35; }
 .option:disabled { cursor: default; }
+@container (aspect-ratio > 1.2) {
+  .quiz-layout {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr) auto auto minmax(0, 1fr);
+    grid-template-areas: "stage ." "stage prompt" "stage options" "stage .";
+    column-gap: clamp(16px, 4cqw, 48px);
+  }
+  .quiz-layout .options { width: 100%; }
+  .option { height: clamp(50px, 14cqh, 104px); font-size: clamp(22px, min(6.5cqh, 4cqw), 44px); }
+  .quiz-layout[data-n="4"] .option { height: clamp(46px, 12cqh, 96px); }
+  .option .listen { width: clamp(40px, 10cqh, 72px); height: clamp(40px, 10cqh, 72px); font-size: clamp(20px, 5cqh, 34px); }
+}
 
-/* Opciones con logotipos (Escucha y toca) */
-.logo-options { display: grid; gap: 14px; max-width: 760px; margin: 0 auto; grid-template-columns: repeat(2, minmax(0, 1fr)); }
-.logo-options.n3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+/* Opciones con logotipos (Escucha y toca): el tamaño lo calcula fitGrid */
+.logo-options { display: grid; justify-content: center; align-content: center; }
 .logo-option {
-  aspect-ratio: 1; padding: 8%; min-width: 0;
+  width: 100%; height: 100%; padding: 10%; min-width: 0;
   background: var(--card); border: 3px solid var(--line); border-radius: var(--radius);
   box-shadow: var(--shadow); cursor: pointer;
   transition: background var(--dur), border-color var(--dur), opacity var(--dur);
@@ -187,8 +254,8 @@ html.calm .start-car { animation: none; }
 .logo-option img { width: 100%; height: 100%; object-fit: contain; }
 .logo-option.correct { background: var(--ok-soft); border-color: var(--ok); }
 .logo-option.dim { opacity: .3; }
-.listen-big { display: flex; justify-content: center; margin: 0 0 16px; }
-.listen-big .btn { font-size: 26px; min-height: 76px; }
+.listen-big { flex: none; display: flex; justify-content: center; }
+.listen-big .btn { font-size: clamp(20px, 4cqh, 28px); min-height: clamp(50px, 11cqh, 80px); }
 
 .nudge { animation: nudge .45s var(--ease); }
 @keyframes nudge { 20% { transform: translateX(-8px); } 50% { transform: translateX(8px); } 80% { transform: translateX(-4px); } }
@@ -197,22 +264,24 @@ html.calm .nudge { animation: none; }
 @keyframes popin { from { transform: scale(.85); opacity: .4; } to { transform: scale(1); opacity: 1; } }
 html.calm .pop-in { animation: none; }
 
-.next-row { display: flex; justify-content: center; margin-top: 18px; min-height: 64px; }
-
 /* ---------- Fin de ronda ---------- */
-.round-end { text-align: center; display: grid; gap: 14px; justify-items: center; padding-top: 10px; }
-.trophy { font-size: 110px; line-height: 1; }
-.round-end h2 { font-size: clamp(30px, 7vw, 44px); }
-.mini-logos { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; max-width: 640px; }
-.mini-logo { width: 84px; height: 84px; padding: 8px; background: var(--card); border: 2px solid var(--line); border-radius: 18px; cursor: pointer; }
+.round-end { flex: 1; min-height: 0; text-align: center; display: flex; flex-direction: column; gap: clamp(6px, 1.6vh, 14px); align-items: center; justify-content: center; }
+.trophy { font-size: clamp(44px, 13vh, 110px); line-height: 1; }
+.round-end h2 { font-size: clamp(26px, 5.5vh, 44px); }
+.round-end p { margin: 0; }
+.mini-logos { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; max-width: min(100%, 980px); }
+.mini-logo { width: clamp(52px, 10vh, 84px); height: clamp(52px, 10vh, 84px); padding: 8px; background: var(--card); border: 2px solid var(--line); border-radius: 18px; cursor: pointer; }
 .mini-logo img { width: 100%; height: 100%; object-fit: contain; }
-.end-actions { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; margin-top: 8px; }
+.end-actions { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; margin-top: 4px; }
+@media (max-height: 560px) { .round-end .btn { min-height: 52px; font-size: 19px; } }
 
 /* ---------- Puzle ---------- */
-.puzzle-wrap { display: flex; flex-wrap: wrap; gap: 18px; justify-content: center; align-items: flex-start; }
+/* El tamaño del tablero y de las piezas lo calcula puzzle.js para que todo quepa */
+.puzzle-wrap { width: 100%; height: 100%; display: flex; flex-direction: column; gap: 18px; justify-content: center; align-items: center; }
+.puzzle-wrap.landscape { flex-direction: row; }
 .board {
-  --n: 2; --size: min(88vw, 44vh, 440px);
-  position: relative; width: var(--size); height: var(--size);
+  --n: 2; flex: none;
+  position: relative; width: 300px; height: 300px;
   display: grid; grid-template-columns: repeat(var(--n), 1fr); grid-template-rows: repeat(var(--n), 1fr);
   background: var(--card); border-radius: 18px; border: 3px solid var(--line); box-shadow: var(--shadow);
   overflow: hidden;
@@ -224,10 +293,12 @@ html.calm .pop-in { animation: none; }
 .board.done .slot { border-color: transparent; }
 .board.done { border-color: var(--ok); }
 .tray {
-  display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; align-content: flex-start;
-  width: min(100%, 460px); min-height: 70px; padding: 12px;
+  flex: none; display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; align-content: center;
+  padding: 12px; max-width: 100%; max-height: 100%;
   background: rgba(255,255,255,.5); border: 2px dashed var(--line); border-radius: 18px;
 }
+.tray.finished { border-color: transparent; background: none; }
+.btn-next { font-size: clamp(22px, 4cqh, 30px); min-height: clamp(60px, 11cqh, 88px); padding: 10px 40px; }
 .piece {
   width: var(--piece); height: var(--piece);
   background-color: #fff; background-repeat: no-repeat;
@@ -240,9 +311,9 @@ html.calm .pop-in { animation: none; }
 .slot > .piece { width: 100%; height: 100%; border-radius: 0; box-shadow: none; cursor: default; }
 
 /* ---------- Parejas ---------- */
-.memory-grid { display: grid; gap: 12px; margin: 0 auto; max-width: 760px; }
+.memory-grid { display: grid; justify-content: center; align-content: center; }
 .card-m {
-  aspect-ratio: 1; perspective: 800px; border: 0; padding: 0; background: none; cursor: pointer;
+  width: 100%; height: 100%; perspective: 800px; border: 0; padding: 0; background: none; cursor: pointer;
 }
 .card-inner { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; transition: transform var(--dur) var(--ease); }
 .card-m.up .card-inner, .card-m.matched .card-inner { transform: rotateY(180deg); }
@@ -250,27 +321,33 @@ html.calm .pop-in { animation: none; }
   position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden;
   border-radius: 18px; display: grid; place-items: center; box-shadow: var(--shadow);
 }
-.card-back { background: var(--primary); color: #fff; font-size: clamp(30px, 8vw, 54px); border: 4px solid #fff; }
+.card-back { background: var(--primary); color: #fff; font-size: calc(var(--cell, 100px) * .42); border: 4px solid #fff; }
 .card-front { background: var(--card); transform: rotateY(180deg); border: 3px solid var(--line); padding: 10%; }
 .card-front img { width: 100%; height: 100%; object-fit: contain; }
 .card-m.matched .card-front { border-color: var(--ok); background: var(--ok-soft); }
 
 /* ---------- Escribe la marca ---------- */
-.spell-logo { width: min(48vw, 30vh, 220px); }
-.word { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin: 0 auto 22px; max-width: 760px; }
+/* Vertical: logo, palabra y letras uno debajo de otro.  Apaisado: logo a la izquierda. */
+.spell-layout { display: grid; gap: clamp(8px, 2cqh, 20px); grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, .75fr) minmax(0, 1.25fr); }
+.spell-logo { min-height: 0; min-width: 0; display: grid; place-items: center; }
+.spell-right { min-height: 0; min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: clamp(10px, 3cqh, 28px); }
+@container (aspect-ratio > 1.2) {
+  .spell-layout { grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr); grid-template-rows: minmax(0, 1fr); column-gap: clamp(16px, 4cqw, 48px); }
+}
+.word { --cw: 56px; flex: none; display: flex; flex-wrap: nowrap; justify-content: center; gap: 8px; max-width: 100%; }
 .cell {
-  width: clamp(40px, 10vw, 64px); height: clamp(52px, 13vw, 78px);
+  width: var(--cw); height: calc(var(--cw) * 1.2);
   display: grid; place-items: center;
-  font-size: clamp(28px, 7vw, 44px); font-weight: 900;
+  font-size: calc(var(--cw) * .66); font-weight: 900;
   border-bottom: 5px solid var(--line); background: rgba(255,255,255,.6); border-radius: 10px 10px 4px 4px;
 }
 .cell.filled { border-color: var(--ok); background: var(--ok-soft); }
-.cell.space { width: 20px; background: none; border: 0; }
+.cell.space { width: calc(var(--cw) * .4); background: none; border: 0; }
 .cell.next { border-color: var(--primary); }
-.letters { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; max-width: 760px; margin: 0 auto; }
+.letters { display: grid; justify-content: center; align-content: center; }
 .letter {
-  width: clamp(60px, 15vw, 84px); height: clamp(60px, 15vw, 84px);
-  font-size: clamp(30px, 8vw, 46px); font-weight: 900;
+  width: 100%; height: 100%;
+  font-size: calc(var(--cell, 80px) * .55); font-weight: 900;
   background: var(--card); border: 3px solid var(--line); border-radius: 18px; box-shadow: var(--shadow); cursor: pointer;
   transition: opacity var(--dur), background var(--dur);
 }
@@ -278,35 +355,35 @@ html.calm .pop-in { animation: none; }
 .letter.hint { background: var(--try-soft); border-color: var(--try); }
 
 /* ---------- Mi garaje ---------- */
-.garage-head { text-align: center; margin-bottom: 14px; font-size: 22px; }
-.garage-grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(min(28vw, 140px), 1fr)); }
+.garage-head { flex: none; text-align: center; margin: 0 0 10px; font-size: 22px; }
+.garage-grid { display: grid; justify-content: center; align-content: center; padding-bottom: 4px; }
 .garage-item {
-  position: relative; aspect-ratio: 1; padding: 12px 12px 30px;
-  background: var(--card); border: 2px solid var(--line); border-radius: 20px; box-shadow: var(--shadow); cursor: pointer;
+  position: relative; width: 100%; height: 100%; padding: 10% 10% 22%; min-width: 0;
+  background: var(--card); border: 2px solid var(--line); border-radius: 18%; box-shadow: var(--shadow); cursor: pointer;
   display: grid; place-items: center;
 }
 .garage-item img { width: 100%; height: 100%; object-fit: contain; }
-.garage-item .name { position: absolute; bottom: 6px; left: 0; right: 0; text-align: center; font-size: 15px; font-weight: 800; }
+.garage-item .name { position: absolute; bottom: 5%; left: 4px; right: 4px; text-align: center; font-size: clamp(11px, calc(var(--cell, 120px) * .12), 16px); font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .garage-item .badge {
-  position: absolute; top: 6px; right: 6px; min-width: 32px; height: 28px; padding: 0 6px;
-  border-radius: 99px; background: #ffe9a8; font-size: 15px; display: grid; place-items: center;
+  position: absolute; top: 5px; right: 5px; min-width: 30px; height: 24px; padding: 0 6px;
+  border-radius: 99px; background: #ffe9a8; font-size: 13px; display: grid; place-items: center;
 }
-.garage-item.new { opacity: .55; }
+.garage-item.new { opacity: .6; }
 
 .modal {
   position: fixed; inset: 0; z-index: 40; display: grid; place-items: center; padding: 20px;
   background: rgba(35, 49, 62, .45);
 }
 .modal-card {
-  width: min(92vw, 460px); background: var(--card); border-radius: 30px; padding: 22px;
+  width: min(92vw, 460px); max-height: calc(100dvh - 24px); overflow-y: auto; background: var(--card); border-radius: 30px; padding: 22px;
   display: grid; gap: 14px; justify-items: center; text-align: center; box-shadow: var(--shadow);
 }
-.modal-card img { width: min(70vw, 320px); aspect-ratio: 1; object-fit: contain; }
-.modal-card h2 { font-size: 40px; }
+.modal-card img { width: min(70vw, 320px, 42vh); aspect-ratio: 1; object-fit: contain; }
+.modal-card h2 { font-size: clamp(28px, 6vh, 40px); }
 .modal-card .stars { font-size: 26px; min-height: 34px; }
 
 /* ---------- Ajustes ---------- */
-.settings-wrap { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; max-width: 760px; margin: 0 auto; }
+.settings-wrap { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; width: 100%; max-width: 760px; margin: 0 auto; padding-bottom: 20px; }
 .settings-wrap h2 { font-size: 24px; margin-top: 14px; }
 .setting { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
   background: var(--card); border: 2px solid var(--line); border-radius: 18px; padding: 12px 16px; }
@@ -332,9 +409,9 @@ html.calm .pop-in { animation: none; }
 .view:focus, .view:focus-visible { outline: none; }
 
 /* ---------- Instalar como app ---------- */
-.home-install { display: flex; justify-content: center; margin-top: 22px; }
+.home-install { display: flex; justify-content: center; }
 .home-install:empty { display: none; }
-.install-btn { font-size: 19px; min-height: 56px; background: var(--primary-soft); border-color: #bcd3e9; }
+.install-btn { font-size: 17px; min-height: 44px; padding: 6px 18px; background: var(--primary-soft); border-color: #bcd3e9; }
 .install-card img { width: 96px; height: 96px; aspect-ratio: auto; border-radius: 22px; }
 .install-card h2 { font-size: 30px; }
 .install-steps { text-align: left; margin: 0; padding-left: 26px; display: grid; gap: 10px; font-size: 19px; font-weight: 700; }

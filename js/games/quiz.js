@@ -51,9 +51,10 @@ export function mount(view, { scope, setRepeat }) {
 
       view.replaceChildren(
         progress.node,
-        el('p.prompt', {}, '¿Qué marca es?'),
-        el('div.stage.pop-in', {}, logoImg(target)),
-        el('div.options', {}, buttons),
+        el('div.play', {}, el('div.layout.quiz-layout', { dataset: { n } },
+          el('p.prompt', {}, '¿Qué marca es?'),
+          el('div.stage-box', {}, el('div.stage.pop-in', {}, logoImg(target))),
+          el('div.options', {}, buttons))),
       );
       progress.set(i);
       speak('¿Qué marca es?');
